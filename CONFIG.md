@@ -1,3 +1,38 @@
+# Configurar Github Action
+
+## Añadir el .github/workflows/workflow.yml
+
+Con configuración para ejecutar el análisis de SonarQube en cada push a master o develop, o en cada pull request en self-hosted SonarQube:
+```yaml
+name: SonarQube Analysis
+on:
+  push:
+    branches: [master, develop]
+    pull_request:
+      types: [opened, synchronize, reopened]
+
+jobs:
+  sonarqube:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: SonarQube Scan
+        run: mvn clean verify sonar:sonar -Dsonar.host.url=http://sonarqube.internal:9000 -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+```
+
+## Descargar e instalar el agente de Github Actions en el servidor donde se encuentra alojado SonarQube
+
+Siguiendo los pasos de la [documentación oficial](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners).
+
+- En tu repositorio de GitHub: **Settings → Actions → Runners → New self-hosted runner**
+- GitHub te dará los comandos para instalar el agente.
+
+# Docker 
+
+## Docker Compose
+```yaml
 # =============================================================================
 # SonarQube Server + PostgreSQL
 # =============================================================================
@@ -104,3 +139,24 @@ volumes:
 networks:
   sonarqube-net:
     driver: bridge
+```	
+
+## Configuración del servidor
+```bash	
+# Elasticsearch (embebido en SonarQube) requiere este parámetro
+sudo sysctl -w vm.max_map_count=262144
+
+# Para hacerlo permanente:
+echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+```	
+## Levantar el servidor
+```bash
+docker-compose -f docker-compose.yml up -d
+```
+
+# Ejecución
+
+## Ejecutar análisis de SonarQube con Maven
+```bash
+mvn clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.login=your_sonar_token
+```
