@@ -12,7 +12,6 @@ public class TestController {
 
     @GetMapping
     public String getTestMessage() {
-        String AWS_SECRET_TOKEN = "qwtakfjdlkfji45484cd";
         return TEST_MESSAGE;
     }
 
