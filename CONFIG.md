@@ -26,7 +26,9 @@ jobs:
           mvn clean verify sonar:sonar \
             -Dsonar.projectKey=quality-measurement \
             -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288
+            -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288 \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
       
 ```
 
@@ -147,3 +149,12 @@ mvn clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.logi
 ```
 
 ### Análisis automático
+
+
+
+## Protección de la rama
+- Ve a **GitHub → tu repositorio → Settings → Branches**
+- Click en **Add branch protection rule**.
+- Nombrar `Quality-ruleset`.
+- Seleccionar las ramas en **Target branches**.
+- Marcar la opción **Require status checks to pass** y seleccionar el **workflow** de Github Actions.
