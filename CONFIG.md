@@ -1,8 +1,8 @@
-# Configurar Github Action
+# SonarQube + Github Action
 
-## Añadir el .github/workflows/workflow.yml
+## Archivos importantes
 
-Con configuración para ejecutar el análisis de SonarQube en cada push a master o develop, o en cada pull request en self-hosted SonarQube:
+`workflow.yml`
 ```yaml
 name: SonarQube Analysis
 on:
@@ -10,6 +10,9 @@ on:
     branches: [master, develop]
     pull_request:
       types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
 
 jobs:
   sonarqube:
@@ -19,47 +22,24 @@ jobs:
         with:
           fetch-depth: 0
       - name: SonarQube Scan
-        run: mvn clean verify sonar:sonar -Dsonar.host.url=http://sonarqube.internal:9000 -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=quality-measurement \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288
+      
 ```
 
-## Descargar e instalar el agente de Github Actions en el servidor donde se encuentra alojado SonarQube
-
-Siguiendo los pasos de la [documentación oficial](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners).
-
-- En tu repositorio de GitHub: **Settings → Actions → Runners → New self-hosted runner**
-- GitHub te dará los comandos para instalar el agente.
-
-# Docker 
-
-## Docker Compose
-```yaml
-# =============================================================================
-# SonarQube Server + PostgreSQL
-# =============================================================================
-# Uso:
-#   Levantar:   docker-compose up -d
-#   Detener:    docker-compose down
-#   Ver logs:   docker-compose logs -f sonarqube
-#   Destruir:   docker-compose down -v  (elimina volúmenes y datos)
-#
-# Acceso:
-#   URL:        http://localhost:9000
-#   Usuario:    admin
-#   Password:   admin  (se pedirá cambiarla en el primer login)
-# =============================================================================
-
+`docker-compose.yml`
+```yml
 services:
-
-  # ---------------------------------------------------------------------------
-  # Base de datos PostgreSQL (recomendada por SonarSource para producción)
-  # ---------------------------------------------------------------------------
   sonarqube-db:
     image: postgres:15-alpine
     container_name: sonarqube-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: sonar_password    # Cambiar en producción
+      POSTGRES_PASSWORD: sonar_password    
       POSTGRES_DB: sonarqube
     volumes:
       - sonarqube_db_data:/var/lib/postgresql/data
@@ -71,13 +51,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # ---------------------------------------------------------------------------
-  # SonarQube Server (Community Edition)
-  # ---------------------------------------------------------------------------
   sonarqube:
-    image: sonarqube:10-community
+    image: sonarqube:lts-community
     container_name: sonarqube
-    restart: unless-stopped
     depends_on:
       sonarqube-db:
         condition: service_healthy
@@ -88,12 +64,10 @@ services:
       SONAR_JDBC_PASSWORD: sonar_password   # Debe coincidir con POSTGRES_PASSWORD
 
       # Configuración de memoria (ajustar según recursos del servidor)
-      SONAR_CE_JAVAOPTS: "-Xmx1g -Xms512m"
-      SONAR_WEB_JAVAOPTS: "-Xmx1g -Xms512m"
-      SONAR_SEARCH_JAVAOPTS: "-Xmx1g -Xms512m"
+      SONAR_CE_JAVAOPTS: "-Xmx512m -Xms512m"
+      SONAR_WEB_JAVAOPTS: "-Xmx512m -Xms512m"
+      SONAR_SEARCH_JAVAOPTS: "-Xmx512m -Xms512m"
 
-      # Opcional: forzar autenticación (recomendado)
-      # SONAR_FORCEAUTHENTICATION: "true"
     ports:
       - "9000:9000"     # UI y API de SonarQube
     volumes:
@@ -102,27 +76,7 @@ services:
       - sonarqube_logs:/opt/sonarqube/logs
     networks:
       - sonarqube-net
-    # -------------------------------------------------------------------------
-    # IMPORTANTE: SonarQube usa Elasticsearch internamente, que requiere
-    # vm.max_map_count >= 262144 en el host.
-    #
-    # Ejecutar en el host ANTES de levantar el compose:
-    #   sudo sysctl -w vm.max_map_count=262144
-    #
-    # Para hacerlo permanente, agregar al archivo /etc/sysctl.conf:
-    #   vm.max_map_count=262144
-    # -------------------------------------------------------------------------
-    ulimits:
-      nofile:
-        soft: 131072
-        hard: 131072
-      nproc:
-        soft: 8192
-        hard: 8192
-
-# -----------------------------------------------------------------------------
-# Volúmenes persistentes
-# -----------------------------------------------------------------------------
+    
 volumes:
   sonarqube_db_data:
     driver: local
@@ -133,44 +87,18 @@ volumes:
   sonarqube_logs:
     driver: local
 
-# -----------------------------------------------------------------------------
-# Red interna
-# -----------------------------------------------------------------------------
 networks:
   sonarqube-net:
     driver: bridge
-```	
-
-## Configuración del servidor
-```bash	
-# Elasticsearch (embebido en SonarQube) requiere este parámetro
-sudo sysctl -w vm.max_map_count=262144
-
-# Para hacerlo permanente:
-echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
-```	
-## Levantar el servidor
-```bash
-docker-compose -f docker-compose.yml up -d
 ```
 
-# Ejecución
+## Configuración del self-runner
 
-## Ejecutar análisis de SonarQube con Maven
-```bash
-mvn clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.login=your_sonar_token
-```
+Siguiendo los pasos de la [documentación oficial](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/adding-self-hosted-runners).
 
+- En tu repositorio de GitHub: **Settings → Actions → Runners → New self-hosted runner**
+- GitHub te dará los comandos para instalar el agente. En mi caso, fueron los siguientes:
 
-## Generar token
-```bash
-mvn clean verify sonar:sonar \
-  -Dsonar.projectKey=quality-measurement \
-  -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288
-```
-
-## Configuración del runner
 ```bash
 # Create a folder
 $ mkdir actions-runner && cd actions-runner
@@ -192,3 +120,30 @@ $ ./config.sh --url https://github.com/FrancoChSa28/quality-measurement --token 
 # Last step, run it!
 $ ./run.sh
 ```
+
+## Ejecución
+
+### Levantar docker
+
+**Pre-requisito**: Se debe configurar el `vm.max_map_count` en los sistemas Unix.
+
+```bash	
+# Elasticsearch (embebido en SonarQube) requiere este parámetro
+sudo sysctl -w vm.max_map_count=262144
+
+# Para hacerlo permanente:
+echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+```	
+
+Para levantar el SonarQube y su base de datos:
+```bash
+cd .build
+docker-compose -f docker-compose.yml up -d
+```
+
+### Análisis en local manualmente
+```bash
+mvn clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.login=your_sonar_token
+```
+
+### Análisis automático
