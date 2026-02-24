@@ -149,8 +149,17 @@ mvn clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.logi
 ```
 
 ### Análisis automático
+```
+Developer hace PR →
 
+GitHub Actions corre →
 
+SonarQube analiza →
+
+Quality Gate falla →
+
+GitHub bloquea el Merge
+```
 
 ## Protección de la rama
 - Ve a **GitHub → tu repositorio → Settings → Branches**
