@@ -5,6 +5,9 @@ on:
     pull_request:
       types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   sonarqube:
     runs-on: self-hosted
@@ -13,5 +16,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: SonarQube Scan
-        run: mvn clean verify sonar:sonar -Dsonar.host.url=http://sonarqube.internal:9000 -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=quality-measurement \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288
       

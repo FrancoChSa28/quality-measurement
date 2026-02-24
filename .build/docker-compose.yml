@@ -40,9 +40,8 @@ services:
   # SonarQube Server (Community Edition)
   # ---------------------------------------------------------------------------
   sonarqube:
-    image: sonarqube:10-community
+    image: sonarqube:lts-community
     container_name: sonarqube
-    restart: unless-stopped
     depends_on:
       sonarqube-db:
         condition: service_healthy
@@ -53,9 +52,9 @@ services:
       SONAR_JDBC_PASSWORD: sonar_password   # Debe coincidir con POSTGRES_PASSWORD
 
       # Configuración de memoria (ajustar según recursos del servidor)
-      SONAR_CE_JAVAOPTS: "-Xmx1g -Xms512m"
-      SONAR_WEB_JAVAOPTS: "-Xmx1g -Xms512m"
-      SONAR_SEARCH_JAVAOPTS: "-Xmx1g -Xms512m"
+      SONAR_CE_JAVAOPTS: "-Xmx512m -Xms512m"
+      SONAR_WEB_JAVAOPTS: "-Xmx512m -Xms512m"
+      SONAR_SEARCH_JAVAOPTS: "-Xmx512m -Xms512m"
 
       # Opcional: forzar autenticación (recomendado)
       # SONAR_FORCEAUTHENTICATION: "true"
@@ -77,14 +76,7 @@ services:
     # Para hacerlo permanente, agregar al archivo /etc/sysctl.conf:
     #   vm.max_map_count=262144
     # -------------------------------------------------------------------------
-    ulimits:
-      nofile:
-        soft: 131072
-        hard: 131072
-      nproc:
-        soft: 8192
-        hard: 8192
-
+    
 # -----------------------------------------------------------------------------
 # Volúmenes persistentes
 # -----------------------------------------------------------------------------
