@@ -20,5 +20,7 @@ jobs:
           mvn clean verify sonar:sonar \
             -Dsonar.projectKey=quality-measurement \
             -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288
+            -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288 \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.qualitygate.timeout=300
       
