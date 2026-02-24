@@ -12,10 +12,6 @@ public class TestController {
 
     @GetMapping
     public String getTestMessage() {
-        // BUG crítico
-        String s = null;
-        System.out.println(s.length()); // NullPointerException
-        
         return TEST_MESSAGE;
     }
 
