@@ -3,6 +3,7 @@ package com.trendyol.qualitymeasurementsample.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("test")
@@ -13,6 +14,11 @@ public class TestController {
     @GetMapping
     public String getTestMessage() {
         return TEST_MESSAGE;
+    } 
+
+    @GetMapping("/sum")
+    public int sum(@RequestParam int a, @RequestParam int b) {
+        return a + b;
     }
 
 }
