@@ -30,4 +30,20 @@ class TestControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$").value("Hello Sonar!"));
     }
+
+    @Test
+    void it_should_sum_two_numbers() throws Exception {
+        //Given
+        int a = 5;
+        int b = 10;
+
+        //When
+        ResultActions result = mockMvc.perform(get("/test/sum")
+                .param("a", String.valueOf(a))
+                .param("b", String.valueOf(b)));
+
+        //Then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(15));
+    }
 }

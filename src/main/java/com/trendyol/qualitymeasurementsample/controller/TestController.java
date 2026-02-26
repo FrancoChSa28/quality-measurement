@@ -13,6 +13,11 @@ public class TestController {
     @GetMapping
     public String getTestMessage() {
         return TEST_MESSAGE;
+    } 
+
+    @GetMapping("/sum")
+    public int sum(@RequestParam int a, @RequestParam int b) {
+        return a + b;
     }
 
 }
