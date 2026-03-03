@@ -21,6 +21,6 @@ jobs:
             -Dsonar.projectKey=quality-measurement \
             -Dsonar.projectName='Quality measurement' \
             -Dsonar.host.url=http://sonaq.sihsalus.gidistest:9000 \
-            -Dsonar.token=sqp_151f272aa151d15fe173049abd11cd6cbe34959b
+            -Dsonar.token=sqp_151f272aa151d15fe173049abd11cd6cbe34959b \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
