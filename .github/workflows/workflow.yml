@@ -17,10 +17,10 @@ jobs:
           fetch-depth: 0
       - name: SonarQube Scan
         run: |
-          mvn clean verify sonar:sonar \
+          mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=quality-measurement \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=sqp_c146996a60ad6a698cee8236f917f0c193668288 \
+            -Dsonar.projectName='Quality measurement' \
+            -Dsonar.host.url=http://sonaq.sihsalus.gidistest:9000 \
+            -Dsonar.token=sqp_151f272aa151d15fe173049abd11cd6cbe34959b \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.qualitygate.timeout=300
-      
